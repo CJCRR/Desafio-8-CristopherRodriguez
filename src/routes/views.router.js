@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import  ProductManager from "../dao/mongooseManager/products.dao.js";
-import CartManager from '../dao/mongooseManager/carts.dao.js';
+//import  ProductManager from "../dao/mongooseManager/products.dao.js";
+//import CartManager from '../dao/mongooseManager/carts.dao.js';
 import  productsModel  from '../dao/models/products.model.js';
+import  cartModel  from '../dao/models/carts.model.js';
 
-
-const pm = new ProductManager()
-const cm = new CartManager()
+//const pm = new ProductManager()
+//const cm = new CartManager()
 
 const router = Router();
 
@@ -31,29 +31,33 @@ router.get('/home', async (req, res) => {
   
 });
 
-
 router.get("/realtimeproducts", (req, res) => {
     res.render("realtimeproducts")
 })
 
-router.get("/realtimeproducts/:pid", async (req, res) => {
-  const id = req.params.pid
-  const product = await pm.getProductById(id)
-  res.render('product', { product })
-});
-router.get('/carts', async (req, res) => {
-  const carrito = await cm.getCarts()
-  res.render('carts', { carrito });
+router.get("/realtimeproducts/:cid", async (req, res) => {
+  try {
+    const id = req.params.cid
+    const result = await productsModel.findById(id).lean().exec();
+    if (result === null) {
+      return res.status(404).json({ status: 'error', error: 'Product not found' });
+    }
+    res.render('product', result);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al leer los productos' });
+  }
 });
 
 router.get('/carts/:cid', async (req, res) => {
-  const cartId = req.params.cid;
   try {
-      const cart = await cm.getCartById(cartId);
-      res.render('cart', { cart, products: cart.products });
-  } catch (err) {
-      console.error('Error al obtener el carrito por ID:', err.message);
-      res.status(500).send('Error al obtener el carrito por ID');
+    const id = req.params.cid
+    const result = await cartModel.findById(id).lean().exec();
+    if (result === null) {
+      return res.status(404).json({ status: 'error', error: 'Cart not found' });
+    }
+    res.render('carts', { cid: result._id, products: result.products });
+  } catch (error) {
+    res.status(500).json({ status: 'error', error: error.message });
   }
 });
 

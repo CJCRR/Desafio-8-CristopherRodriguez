@@ -17,7 +17,7 @@ router.get('/register', (req, res) => {
 router.get('/login', (req, res) => {
     if (req.session.user) {
         // Si el usuario ya está autenticado, redireccionar al perfil
-        res.redirect('/home');
+        res.redirect('/profile');
     } else {
         res.render('login');
     }
@@ -31,21 +31,12 @@ router.get('/profile', isAuthenticated, (req, res) => {
         last_name: req.session.user.last_name,
         email: req.session.user.email,
         age: req.session.user.age,
+        cart: req.session.user.cart,
     };
     console.log(userInfo);
     res.render('profile', userInfo);
 });
-router.get('/profile', isAuthenticated, (req, res) => {
-    // Obtener la información del usuario desde la sesión
-    const userInfo = {
-        first_name: req.session.user.first_name,
-        last_name: req.session.user.last_name,
-        email: req.session.user.email,
-        age: req.session.user.age,
-    };
-    console.log(userInfo);
-    res.render('profile', userInfo);
-});
+
 // Ruta para cerrar sesión (privada, requiere estar autenticado)
 router.get('/logout', isAuthenticated, (req, res) => {
     // Destruir la sesión actual del usuario
